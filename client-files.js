@@ -1,25 +1,14 @@
 const net = require('net');
 const fs = require('fs');
-const shuffle = require('shuffle-array');
+const path = require('path');
 const port = 8124;
 const client = new net.Socket();
+let arg = false;
 
-let arr;
-let currInd = -1;
-let servAnsw;
 client.setEncoding('utf8');
 client.connect(port, function () {
     console.log('Connected');
-    fs.readFile('qa.json', (err, text) => {
-        if (!err) {
-            arr = JSON.parse(text);
-            shuffle(arr);
-            client.write('QA');
-        }
-        else {
-            console.log(err);
-        }
-    })
+    client.write('FILES');
 });
 
 client.on('data',  (data) => {
@@ -27,31 +16,26 @@ client.on('data',  (data) => {
         client.destroy();
     }
     if (data === 'ACK') {
-        sendQuestion();
-    }
-   else {
-        if (data === '1') {
-            servAnsw = arr[currInd].goodAns;
-        }
-        else {
-            servAnsw = arr[currInd].badAns;
-        }
-        console.log('Question: ' + arr[currInd].question);
-        console.log('Good Answer: ' + arr[currInd].goodAns);
-        console.log('Server Answer: ' + servAnsw);
-        sendQuestion();
+        process.argv.forEach(function (val, index, array) {
+         fs.stat(val, (err, stats) => {
+            if (stats.isDirectory()){
+                fs.readdir(val, function(err, files){
+                   files.forEach(function(file){
+                    client.write(path.basename(file) + " ");
+                   })
+                });
+            }
+        });
+        //client.destroy();  
+      });
     }
 });
 
 client.on('close', function () {
+    client.destroy();
     console.log('Connection closed');
 });
 
-function sendQuestion() {
-    if (currInd < arr.length - 1) {
-        client.write(arr[++currInd].question);
-    }
-    else {
-        client.destroy();
-    }
+function push(fileName){
+    return client.write(fileName + "\n");;
 }
