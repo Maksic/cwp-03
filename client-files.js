@@ -16,13 +16,25 @@ client.on('data',  (data) => {
         client.destroy();
     }
     if (data === 'ACK') {
+        if (process.argv.length == 2){
+            client.write(".");
+            client.destroy(); 
+        }
         process.argv.forEach(function (val, index, array) {
          fs.stat(val, (err, stats) => {
             if (stats.isDirectory()){
                 fs.readdir(val, function(err, files){
                    files.forEach(function(file){
-                    client.write(path.basename(file) + " ");
-                   })
+                    let extname = path.extname(file);
+                        if(extname == ".txt"){
+                            fs.readFile(val +"/"+ file, "utf8", function(err, datas) {
+                                console.log(path.basename(file));
+                                console.log(datas);
+                                client.write(path.basename(file) + " ");
+                                client.write(datas);
+                            });
+                        }
+                    })
                 });
             }
         });
