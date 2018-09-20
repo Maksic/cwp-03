@@ -11,6 +11,7 @@ let countUser = process.env.FILES;
 let conections = 0;
 //DIR=default FILES=2 nodemon server.js
 const server = net.createServer((client) => {
+    if(conections <= countUser){
     const logger = fs.createWriteStream('client_'+ seed +'.txt');
     logger.write('Client ' + seed + ' disconnected\n');
     client.id = seed;
@@ -24,7 +25,6 @@ const server = net.createServer((client) => {
             console.log("New user with files and ID: " + seed++);
         }
         else{
-            if(conections <= countUser){
             fs.mkdir(dirPath, function(err) {
                 arr = data.split(' ');
                 arrs = data.split('!');
@@ -33,22 +33,24 @@ const server = net.createServer((client) => {
                             if(err) throw err; 
                         });
                     }
-                for (var i = 0; i < arr.length; i++) {
-                    let extname = path.extname(arr[i]);
+                        for (var i = 0; i < arr.length; i++) {
+                            let extname = path.extname(arr[i]);
                     if(extname == ".txt"){
-                    fs.writeFile(dirPath +'/'+ arr[i], data, function(err) {
+                        console.log(arr[i]);
+                    fs.writeFile(dirPath +'/'+ arr[i], arrs[i], function(err) {
                         if(err) throw err; 
                     });
                   }
                 }
-                //client.write('DEC');
             });
-          }
-          else console.log("Exceeded the allowable limit.")
         }
     });
 
     client.on('end', () => console.log('Client disconnected'));
+} else {
+    client.write('DEC');
+    console.log("Exceeded the allowable limit.");
+}
 });
 
 server.listen(port, () => {

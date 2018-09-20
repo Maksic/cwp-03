@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const port = 8124;
 const client = new net.Socket();
-let arg = false;
+let arg = 0;
 
 client.setEncoding('utf8');
 client.connect(port, function () {
@@ -16,11 +16,10 @@ client.on('data',  (data) => {
         client.destroy();
     }
     if (data === 'ACK') {
-        if (process.argv.length == 2){
-            client.write(".");
-            client.destroy(); 
-        }
         process.argv.forEach(function (val, index, array) {
+            arg++;
+            console.log(arg);
+            console.log(process.argv.length);
          fs.stat(val, (err, stats) => {
             if (stats.isDirectory()){
                 fs.readdir(val, function(err, files){
@@ -31,16 +30,17 @@ client.on('data',  (data) => {
                                 console.log(path.basename(file));
                                 console.log(datas);
                                 client.write(path.basename(file) + " ");
-                                client.write(datas);
+                                client.write(datas + "  ");
                             });
                         }
                     })
                 });
             }
-        });
-        //client.destroy();  
+        }); 
       });
     }
+    if(process.argv.length == 2) client.destroy();
+   // if(process.argv.length == arg) client.write('DEC');
 });
 
 client.on('close', function () {
