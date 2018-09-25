@@ -10,6 +10,7 @@ let dir = process.env.DIR;
 let countUser = process.env.FILES;
 let conections = 0;
 //DIR=default FILES=2 nodemon server.js
+//node --experimental-worker client-swarm.js 5
 const server = net.createServer((client) => {
     if(conections <= countUser){
     const logger = fs.createWriteStream('client_'+ seed +'.txt');
@@ -26,23 +27,24 @@ const server = net.createServer((client) => {
         }
         else{
             fs.mkdir(dirPath, function(err) {
-                arr = data.split(' ');
-                arrs = data.split('!');
+            console.log(data);
+               arr = data.split("|");
                     if(arr.length == 1){
                         fs.writeFile(dirPath +'/'+ dir +".txt", "Default text!", function(err) {
                             if(err) throw err; 
                         });
                     }
-                        for (var i = 0; i < arr.length; i++) {
-                            let extname = path.extname(arr[i]);
-                    if(extname == ".txt"){
-                        console.log(arr[i]);
-                    fs.writeFile(dirPath +'/'+ arr[i], arrs[i], function(err) {
-                        if(err) throw err; 
-                    });
-                  }
-                }
+                    for (var i = 0; i < arr.length; i++) {
+                        let extname = path.extname(arr[i]);
+                    	if(extname == ".txt"){
+                        	console.log(arr[i]);
+                    		fs.writeFile(dirPath +'/'+ arr[i], arr[++i], function(err) {
+                        	if(err) throw err; 
+                    		});
+                  		}
+                	}
             });
+            client.write('DEC');
         }
     });
 

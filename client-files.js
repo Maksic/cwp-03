@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const port = 8124;
 const client = new net.Socket();
-let arg = 0;
 
 client.setEncoding('utf8');
 client.connect(port, function () {
@@ -17,9 +16,6 @@ client.on('data',  (data) => {
     }
     if (data === 'ACK') {
         process.argv.forEach(function (val, index, array) {
-            arg++;
-            console.log(arg);
-            console.log(process.argv.length);
          fs.stat(val, (err, stats) => {
             if (stats.isDirectory()){
                 fs.readdir(val, function(err, files){
@@ -27,10 +23,9 @@ client.on('data',  (data) => {
                     let extname = path.extname(file);
                         if(extname == ".txt"){
                             fs.readFile(val +"/"+ file, "utf8", function(err, datas) {
-                                console.log(path.basename(file));
-                                console.log(datas);
-                                client.write(path.basename(file) + " ");
-                                client.write(datas + "  ");
+                                let st = path.basename(file) + "|" + datas+ "|";
+                                console.log(st);
+                                client.write(st);
                             });
                         }
                     })
@@ -40,7 +35,6 @@ client.on('data',  (data) => {
       });
     }
     if(process.argv.length == 2) client.destroy();
-   // if(process.argv.length == arg) client.write('DEC');
 });
 
 client.on('close', function () {
